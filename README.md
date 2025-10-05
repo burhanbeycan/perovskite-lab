@@ -1,12 +1,16 @@
 # 🔬 PerovskiteLab - Autonomous ML-Driven Synthesis Platform
 
-[![Live Demo](https://img.shields.io/badge/Demo-Live-green)](https://YOUR_USERNAME.github.io/perovskite-lab/)
-[![Status](https://img.shields.io/badge/Status-Active-brightgreen)](https://github.com/YOUR_USERNAME/perovskite-lab)
+[![Live Demo](https://img.shields.io/badge/Demo-Live-green)](https://burhanbeycan.github.io/perovskite-lab/)
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen)](https://github.com/burhanbeycan/perovskite-lab)
 [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
 > **Real-time monitoring of an autonomous perovskite solar cell optimization campaign using robotics, machine learning, and high-throughput characterization.**
 
 ![Dashboard Preview](docs/preview.png)
+
+## 🚀 Live Demo
+
+**Visit the live demo**: [https://burhanbeycan.github.io/perovskite-lab/](https://burhanbeycan.github.io/perovskite-lab/)
 
 ---
 
@@ -38,7 +42,7 @@ PerovskiteLab is a fully autonomous laboratory system for optimizing perovskite 
 
 ## 🚀 Live Demo
 
-**Visit the live demo**: [https://YOUR_USERNAME.github.io/perovskite-lab/](https://YOUR_USERNAME.github.io/perovskite-lab/)
+**Visit the live demo**: [https://burhanbeycan.github.io/perovskite-lab/](https://burhanbeycan.github.io/perovskite-lab/)
 
 ### Features
 
@@ -290,7 +294,7 @@ This software is primarily intended for academic and research purposes. For comm
 - **Project Lead**: Your Name
 - **Institution**: Your University/Lab
 - **Email**: your.email@university.edu
-- **GitHub**: [@YOUR_USERNAME](https://github.com/YOUR_USERNAME)
+- **GitHub**: [@burhanbeycan](https://github.com/burhanbeycan)
 
 ---
 
@@ -313,7 +317,7 @@ This software is primarily intended for academic and research purposes. For comm
 
 ### 🌟 Star this repo if you find it useful!
 
-[⭐ Star](https://github.com/YOUR_USERNAME/perovskite-lab) • [🐛 Report Bug](https://github.com/YOUR_USERNAME/perovskite-lab/issues) • [💡 Request Feature](https://github.com/YOUR_USERNAME/perovskite-lab/issues)
+[⭐ Star](https://github.com/burhanbeycan/perovskite-lab) • [🐛 Report Bug](https://github.com/burhanbeycan/perovskite-lab/issues) • [💡 Request Feature](https://github.com/burhanbeycan/perovskite-lab/issues)
 
 **Made with ❤️ for accelerating perovskite research and clean energy transition**
 
