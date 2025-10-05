@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PerovskiteLab - Autonomous ML-Driven Synthesis Platform</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #10b981;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --surface-light: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 2rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--surface-light);
+            color: var(--text);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-muted);
+        }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--surface-light);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.75rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .chart-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        canvas {
+            max-height: 400px;
+        }
+
+        /* Experiments List */
+        .experiments-list {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .experiment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .experiment-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-running {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-characterization {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        /* Activity Feed */
+        .activity-feed {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-left: 2px solid var(--border);
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--surface-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-message {
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .tab:hover {
+            color: var(--text);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">🔬</div>
+                <span>PerovskiteLab</span>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a class="nav-link active" onclick="showPage('dashboard')">
+                            <span>📊</span>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="showPage('status')">
+                            <span>📈</span>
+                            <span>Project Status</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="showPage('experiments')">
+                            <span>🧪</span>
+                            <span>Experiments</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="showPage('optimization')">
+                            <span>🤖</span>
+                            <span>ML Optimization</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page">
+                <div class="header">
+                    <h1>Dashboard</h1>
+                    <p>Autonomous Perovskite Optimization Campaign - Live Monitoring</p>
+                    <div class="live-badge">
+                        <div class="live-dot"></div>
+                        <span>LIVE</span>
+                        <span id="current-time"></span>
+                    </div>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Campaign Progress</div>
+                        </div>
+                        <div class="card-value" id="completed-count">147</div>
+                        <div class="card-subtitle">/ 200 experiments</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 73.5%"></div>
+                        </div>
+                        <div class="card-subtitle">73.5% complete</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Active Experiments</div>
+                        </div>
+                        <div class="card-value" style="color: var(--primary)">3</div>
+                        <div class="card-subtitle">synthesis running</div>
+                        <div style="margin-top: 0.5rem;">
+                            <div class="card-value" style="font-size: 1.5rem; color: var(--warning)">2</div>
+                            <div class="card-subtitle">characterization</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Average Quality</div>
+                        </div>
+                        <div class="card-value" style="color: var(--success)">0.782</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 78.2%"></div>
+                        </div>
+                        <div class="card-subtitle">Tier 1 quality score</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Tier 2 Candidates</div>
+                        </div>
+                        <div class="card-value" style="color: var(--secondary)">42</div>
+                        <div class="card-subtitle">28.6% of completed</div>
+                        <div style="margin-top: 0.5rem;">
+                            <div class="card-subtitle">High quality samples</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Quality Score Progression</div>
+                        <div class="chart-subtitle">Last 30 experiments</div>
+                    </div>
+                    <canvas id="qualityChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Pareto Frontier</div>
+                        <div class="chart-subtitle">Quality vs Crystallinity trade-off</div>
+                    </div>
+                    <canvas id="paretoChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Project Status Page -->
+            <div id="status" class="page" style="display: none;">
+                <div class="header">
+                    <h1>Project Status</h1>
+                    <p>Campaign overview and system status</p>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('overview')">Overview</button>
+                    <button class="tab" onclick="showTab('system')">System Status</button>
+                    <button class="tab" onclick="showTab('timeline')">Timeline</button>
+                </div>
+
+                <div id="overview" class="tab-content active">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <div class="chart-title">Optimization Progress</div>
+                            <div class="chart-subtitle">Bayesian optimization convergence</div>
+                        </div>
+                        <canvas id="optimizationChart"></canvas>
+                    </div>
+
+                    <div class="experiments-list">
+                        <div class="chart-header">
+                            <div class="chart-title">Recent Completed Experiments</div>
+                            <div class="chart-subtitle">Last 5 experiments with results</div>
+                        </div>
+                        <div id="recent-experiments"></div>
+                    </div>
+                </div>
+
+                <div id="system" class="tab-content">
+                    <div class="cards-grid">
+                        <div class="card">
+                            <div class="card-title">Robot Status</div>
+                            <div class="card-value" style="font-size: 1.25rem; margin-top: 1rem;">
+                                <span class="status-badge status-running" id="robot-status">IDLE</span>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <div class="card-subtitle">Current: <span id="robot-current">None</span></div>
+                                <div class="card-subtitle">Queue: <span id="robot-queue">0</span> experiments</div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">Characterization</div>
+                            <div style="margin-top: 1rem;">
+                                <div class="card-subtitle" style="font-weight: 600;">Tier 1</div>
+                                <div class="card-subtitle">Status: <span class="status-badge status-completed" id="tier1-status">IDLE</span></div>
+                                <div class="card-subtitle" style="margin-top: 0.5rem;">Queue: <span id="tier1-queue">0</span></div>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <div class="card-subtitle" style="font-weight: 600;">Tier 2</div>
+                                <div class="card-subtitle">Queue: <span id="tier2-queue">0</span></div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">Glovebox Conditions</div>
+                            <div style="margin-top: 1rem;">
+                                <div class="card-subtitle">O₂ Level: <span id="o2-level">0.3</span> ppm</div>
+                                <div class="card-subtitle">H₂O Level: <span id="h2o-level">0.2</span> ppm</div>
+                                <div class="card-subtitle">Temperature: <span id="temperature">23.1</span>°C</div>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <span class="status-badge status-completed">✓ All parameters OK</span>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">ML Engine</div>
+                            <div class="card-value" style="font-size: 1.25rem; margin-top: 1rem;">
+                                <span class="status-badge status-completed">ACTIVE</span>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <div class="card-subtitle">Version: 2.3.1</div>
+                                <div class="card-subtitle">Observations: 147</div>
+                                <div class="card-subtitle">Pareto Points: 12</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="timeline" class="tab-content">
+                    <div class="experiments-list">
+                        <div class="chart-header">
+                            <div class="chart-title">Live Activity Feed</div>
+                            <div class="chart-subtitle">Real-time updates from the autonomous lab</div>
+                        </div>
+                        <div class="activity-feed" id="activity-feed"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Experiments Page -->
+            <div id="experiments" class="page" style="display: none;">
+                <div class="header">
+                    <h1>Experiments</h1>
+                    <p>Browse and analyze experiment results</p>
+                </div>
+
+                <div class="experiments-list">
+                    <div class="chart-header">
+                        <div class="chart-title">All Experiments</div>
+                        <div class="chart-subtitle">147 total experiments</div>
+                    </div>
+                    <div id="all-experiments"></div>
+                </div>
+            </div>
+
+            <!-- Optimization Page -->
+            <div id="optimization" class="page" style="display: none;">
+                <div class="header">
+                    <h1>ML Optimization</h1>
+                    <p>Bayesian optimization with EHVI acquisition</p>
+                </div>
+
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-title">Model Status</div>
+                        <div style="margin-top: 1rem;">
+                            <div class="card-subtitle">Version: 2.3.1</div>
+                            <div class="card-subtitle">Observations: 147</div>
+                            <div class="card-subtitle">Pareto Points: 12</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Next Experiments</div>
+                        <div style="margin-top: 1rem;">
+                            <div class="status-badge status-running" style="margin-bottom: 0.5rem; display: block;">EXP_148 (Exploitation)</div>
+                            <div class="status-badge status-characterization" style="margin-bottom: 0.5rem; display: block;">EXP_149 (Exploration)</div>
+                            <div class="status-badge status-completed" style="display: block;">EXP_150 (Diversity)</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Convergence</div>
+                        <div style="margin-top: 1rem;">
+                            <div class="card-subtitle">Iterations: 25 / 50</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 50%"></div>
+                            </div>
+                            <div class="card-subtitle">Estimated: 25 more iterations</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">Optimization Progress</div>
+                        <div class="chart-subtitle">Best quality and crystallinity over iterations</div>
+                    </div>
+                    <canvas id="mlOptimizationChart"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Mock Data
+        const experiments = [];
+        for (let i = 0; i < 50; i++) {
+            const id = `EXP_${String(i + 100).padStart(3, '0')}`;
+            const quality = 0.7 + Math.random() * 0.3;
+            const crystallinity = 0.75 + Math.random() * 0.25;
+            let status = 'completed';
+            if (i >= 47) status = 'running';
+            else if (i >= 45) status = 'characterization';
+            
+            experiments.push({
+                id,
+                quality: quality.toFixed(3),
+                crystallinity: crystallinity.toFixed(3),
+                status,
+                composition: `FA:${(0.6 + Math.random() * 0.4).toFixed(2)} Cs:${(0.0 + Math.random() * 0.4).toFixed(2)}`,
+                annealTemp: Math.floor(80 + Math.random() * 100)
+            });
+        }
+
+        // Navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+            document.getElementById(pageId).style.display = 'block';
+            
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            event.target.closest('.nav-link').classList.add('active');
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Update Time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US');
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Quality Chart
+        const qualityCtx = document.getElementById('qualityChart').getContext('2d');
+        new Chart(qualityCtx, {
+            type: 'line',
+            data: {
+                labels: experiments.slice(0, 30).map(e => e.id),
+                datasets: [{
+                    label: 'Quality Score',
+                    data: experiments.slice(0, 30).map(e => e.quality),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { labels: { color: '#f1f5f9' } }
+                },
+                scales: {
+                    y: { 
+                        min: 0, 
+                        max: 1,
+                        ticks: { color: '#94a3b8' },
+                        grid: { color: '#334155' }
+                    },
+                    x: { 
+                        ticks: { color: '#94a3b8', maxRotation: 45 },
+                        grid: { color: '#334155' }
+                    }
+                }
+            }
+        });
+
+        // Pareto Chart
+        const paretoCtx = document.getElementById('paretoChart').getContext('2d');
+        new Chart(paretoCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Pareto Points',
+                    data: experiments.filter(e => e.status === 'completed').slice(0, 12).map(e => ({
+                        x: parseFloat(e.quality),
+                        y: parseFloat(e.crystallinity)
+                    })),
+                    backgroundColor: '#10b981',
+                    pointRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { labels: { color: '#f1f5f9' } }
+                },
+                scales: {
+                    y: { 
+                        min: 0.5, 
+                        max: 1,
+                        title: { display: true, text: 'Crystallinity', color: '#f1f5f9' },
+                        ticks: { color: '#94a3b8' },
+                        grid: { color: '#334155' }
+                    },
+                    x: { 
+                        min: 0.5, 
+                        max: 1,
+                        title: { display: true, text: 'Quality', color: '#f1f5f9' },
+                        ticks: { color: '#94a3b8' },
+                        grid: { color: '#334155' }
+                    }
+                }
+            }
+        });
+
+        // Optimization Chart
+        const optData = [];
+        for (let i = 1; i <= 25; i++) {
+            optData.push({
+                iteration: i,
+                quality: 0.5 + i * 0.015 + Math.random() * 0.05,
+                crystallinity: 0.6 + i * 0.012 + Math.random() * 0.04
+            });
+        }
+
+        const optCtx = document.getElementById('optimizationChart').getContext('2d');
+        new Chart(optCtx, {
+            type: 'line',
+            data: {
+                labels: optData.map(d => d.iteration),
+                datasets: [
+                    {
+                        label: 'Best Quality',
+                        data: optData.map(d => d.quality),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Best Crystallinity',
+                        data: optData.map(d => d.crystallinity),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { labels: { color: '#f1f5f9' } }
+                },
+                scales: {
+                    y: { 
+                        min: 0, 
+                        max: 1,
+                        ticks: { color: '#94a3b8' },
+                        grid: { color: '#334155' }
+                    },
+                    x: { 
+                        title: { display: true, text: 'Iteration', color: '#f1f5f9' },
+                        ticks: { color: '#94a3b8' },
+                        grid: { color: '#334155' }
+                    }
+                }
+            }
+        });
+
+        // ML Optimization Chart
+        const mlOptCtx = document.getElementById('mlOptimizationChart').getContext('2d');
+        new Chart(mlOptCtx, {
+            type: 'line',
+            data: {
+                labels: optData.map(d => d.iteration),
+                datasets: [
+                    {
+                        label: 'Best Quality',
+                        data: optData.map(d => d.quality),
+                        borderColor: '#3b82f6',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Best Crystallinity',
+                        data: optData.map(d => d.crystallinity),
+                        borderColor: '#10b981',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { labels: { color: '#f1f5f9' } }
+                },
+                scales: {
+                    y: { 
+                        min: 0, 
+                        max: 1,
+                        ticks: { color: '#94a3b8' },
+                        grid: { color: '#334155' }
+                    },
+                    x: { 
+                        ticks: { color: '#94a3b8' },
+                        grid: { color: '#334155' }
+                    }
+                }
+            }
+        });
+
+        // Recent Experiments
+        const recentExps = experiments.filter(e => e.status === 'completed').slice(0, 5);
+        const recentHtml = recentExps.map(exp => `
+            <div class="experiment-item">
+                <div class="experiment-info">
+                    <span>✓</span>
+                    <div>
+                        <div style="font-weight: 600;">${exp.id}</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">${exp.composition} | ${exp.annealTemp}°C</div>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-weight: 600;">Quality: ${exp.quality}</div>
+                    <span class="status-badge status-completed">Tier 2 ✓</span>
+                </div>
+            </div>
+        `).join('');
+        document.getElementById('recent-experiments').innerHTML = recentHtml;
+
+        // All Experiments
+        const allExpsHtml = experiments.map(exp => `
+            <div class="experiment-item">
+                <div class="experiment-info">
+                    <span class="status-badge status-${exp.status}">${exp.status.toUpperCase()}</span>
+                    <div>
+                        <div style="font-weight: 600;">${exp.id}</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">${exp.composition} | ${exp.annealTemp}°C</div>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-weight: 600;">Quality: ${exp.quality}</div>
+                    ${exp.status === 'completed' ? `<div style="font-size: 0.875rem; color: var(--text-muted);">Crystallinity: ${exp.crystallinity}</div>` : ''}
+                </div>
+            </div>
+        `).join('');
+        document.getElementById('all-experiments').innerHTML = allExpsHtml;
+
+        // Activity Feed
+        const activities = [
+            { icon: '✓', message: 'Synthesis completed for EXP_147', time: '2 minutes ago' },
+            { icon: '🔬', message: 'Tier 1 characterization started for EXP_146', time: '5 minutes ago' },
+            { icon: '✓', message: 'Characterization completed for EXP_145', time: '12 minutes ago' },
+            { icon: '🤖', message: 'ML model updated with 3 new observations', time: '15 minutes ago' },
+            { icon: '🎯', message: 'EXP_145 queued for Tier 2 (quality: 0.89)', time: '18 minutes ago' },
+            { icon: '📊', message: 'Optimization iteration 23 completed', time: '25 minutes ago' },
+            { icon: '📈', message: 'Pareto frontier updated: 12 points', time: '30 minutes ago' },
+            { icon: '🔬', message: 'Synthesis started for EXP_146', time: '45 minutes ago' }
+        ];
+
+        const activityHtml = activities.map(act => `
+            <div class="activity-item">
+                <div class="activity-icon">${act.icon}</div>
+                <div class="activity-content">
+                    <div class="activity-message">${act.message}</div>
+                    <div class="activity-time">${act.time}</div>
+                </div>
+            </div>
+        `).join('');
+        document.getElementById('activity-feed').innerHTML = activityHtml;
+
+        // Real-time Updates
+        function updateSystemStatus() {
+            const statuses = ['IDLE', 'SYNTHESIS', 'MEASURING'];
+            document.getElementById('robot-status').textContent = statuses[Math.floor(Math.random() * 2)];
+            document.getElementById('robot-current').textContent = Math.random() > 0.5 ? 'EXP_147' : 'None';
+            document.getElementById('robot-queue').textContent = Math.floor(Math.random() * 5);
+            
+            document.getElementById('tier1-status').textContent = statuses[Math.floor(Math.random() * 2)];
+            document.getElementById('tier1-queue').textContent = Math.floor(Math.random() * 3);
+            document.getElementById('tier2-queue').textContent = Math.floor(Math.random() * 2);
+            
+            document.getElementById('o2-level').textContent = (0.1 + Math.random() * 0.5).toFixed(2);
+            document.getElementById('h2o-level').textContent = (0.1 + Math.random() * 0.4).toFixed(2);
+            document.getElementById('temperature').textContent = (22 + Math.random() * 2).toFixed(1);
+        }
+
+        setInterval(updateSystemStatus, 10000);
+        updateSystemStatus();
+    </script>
+</body>
+</html>
